@@ -9,7 +9,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Ksfraser\\FA_EmailManager\\": "src/"
+            "Ksfraser\\": "src/Ksfraser/"
         }
     },
     "minimum-stability": "stable"
