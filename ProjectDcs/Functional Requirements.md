@@ -10,7 +10,7 @@
 
 ## Overview
 
-Email campaign management for FrontAccounting - templates, automation, and tracking with CRM integration. This module handles outbound email delivery with optional GPG signing and encryption.
+Email campaign management for FrontAccounting - templates, automation, and tracking with CRM integration. This module handles outbound email delivery with GPG signing. **EmailManager does NOT encrypt** - calling modules (CRM, HRM, Suppliers) are responsible for encrypting attachments before calling EmailManager.
 
 ---
 
@@ -52,9 +52,9 @@ Email campaign management for FrontAccounting - templates, automation, and track
 ## FR-005 GPG Signing Integration
 **Satisfies**: BR-005
 
-- FR-005.1 The system shall sign all outgoing emails when a GPG key exists for the recipient.
+- FR-005.1 The system shall sign all outgoing emails when a GPG key exists for the sender.
 - FR-005.2 The system shall call `hook_invoke_all('gpg_sign', $data)` before sending.
-- FR-005.3 The system shall sign email attachments.
+- FR-005.3 The system shall sign email attachments (including encrypted attachments from calling modules).
 - FR-005.4 The system shall log signing operations.
 
 ### Implementation TODO
@@ -62,36 +62,27 @@ Email campaign management for FrontAccounting - templates, automation, and track
 // TODO: Add GPG signing to email send pipeline
 // In email sending function, before final send:
 $data = [
-    'contact_type' => $contactType,
-    'contact_id' => $contactId,
-    'email' => $toEmail,
-    'file_path' => $attachmentPath,
+    'sender_email' => $senderEmail,  // Sign with sender's key
+    'file_path' => $attachmentPath,   // May already be encrypted by calling module
 ];
 hook_invoke_all('gpg_sign', $data);
 ```
 
 ---
 
-## FR-006 GPG Encryption Integration
+## FR-006 Encryption by Calling Modules (NOT EmailManager)
 **Satisfies**: BR-006
 
-- FR-006.1 The system shall encrypt emails when the encrypt flag is set.
-- FR-006.2 The system shall call `hook_invoke_all('gpg_encrypt', $data)` before sending.
-- FR-006.3 The system shall encrypt email attachments.
-- FR-006.4 The system shall support password-based encryption for contacts without keys.
+- FR-006.1 EmailManager shall NOT encrypt emails or attachments.
+- FR-006.2 Calling modules (CRM, HRM, Suppliers, Calendar) are responsible for encryption.
+- FR-006.3 Calling modules shall encrypt files BEFORE calling EmailManager.
+- FR-006.4 EmailManager shall sign encrypted attachments like any other attachment.
 
-### Implementation TODO
-```php
-// TODO: Add GPG encryption to email send pipeline
-// In email sending function, before final send:
-if ($encryptFlag) {
-    $data = [
-        'email' => $toEmail,
-        'file_path' => $attachmentPath,
-        'password' => null, // Use GPG key if available, otherwise password
-    ];
-    hook_invoke_all('gpg_encrypt', $data);
-}
+### Architecture Note
+```
+Calendar flow: generate .ics → EmailManager signs → sends (NO encryption, .ics must be readable)
+CRM flow: encrypt file → save encrypted version → EmailManager signs + sends
+HRM flow: encrypt file → save encrypted version → EmailManager signs + sends
 ```
 
 ---
@@ -100,8 +91,8 @@ if ($encryptFlag) {
 **Satisfies**: BR-007
 
 - FR-007.1 The system shall call `hook_invoke_all('gpg_email_before_send', $data)` before sending.
-- FR-007.2 The data array shall include: `to`, `subject`, `body`, `attachments`, `encrypt` flag.
-- FR-007.3 The system shall use returned file paths from GPG hooks.
+- FR-007.2 The data array shall include: `to`, `subject`, `body`, `attachments` (may be pre-encrypted by caller).
+- FR-007.3 The system shall use returned file paths from GPG signing hooks.
 
 ### Implementation TODO
 ```php
@@ -110,11 +101,10 @@ $data = [
     'to' => $toEmail,
     'subject' => $subject,
     'body' => $body,
-    'attachments' => $attachments,
-    'encrypt' => $encryptFlag,
+    'attachments' => $attachments,  // May contain encrypted files from CRM/HRM
 ];
 hook_invoke_all('gpg_email_before_send', $data);
-// Update attachments array with GPG-signed/encrypted paths
+// Update attachments array with GPG-signed paths
 $attachments = $data['attachments'];
 ```
 
@@ -125,14 +115,19 @@ $attachments = $data['attachments'];
 
 - FR-008.1 The module shall implement `getModuleCapabilities()` for email sending.
 - FR-008.2 The module shall respond to `hasCapability('email')` calls.
+- FR-008.3 EmailManager capability is "email" and "email_with_signing" (no encryption capability).
 
 ### Implementation TODO
 ```php
-// TODO: Add GPG capability check in getModuleCapabilities()
+// TODO: Add email capability check in getModuleCapabilities()
 public function getModuleCapabilities(&$data, $opts = null) {
     $capabilities = [
         'email' => [
-            'description' => 'Send emails with GPG signing/encryption',
+            'description' => 'Send emails',
+            'methods' => ['sendEmail', 'sendWithAttachment'],
+        ],
+        'email_with_signing' => [
+            'description' => 'Send emails with GPG signing',
             'methods' => ['sendEmail', 'sendWithAttachment'],
         ],
     ];
@@ -154,6 +149,6 @@ public function getModuleCapabilities(&$data, $opts = null) {
 ## FR-010 Dependencies
 
 - FR-010.1 `ksf_FA_CRM` for contact lookup
-- FR-010.2 `ksf_FA_GPG` for signing/encryption (optional)
+- FR-010.2 `ksf_FA_GPG` for signing only (optional)
 - FR-010.3 FrontAccounting 2.4.19
 - FR-010.4 PHP 7.3
