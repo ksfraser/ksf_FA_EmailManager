@@ -3,12 +3,12 @@
  * Mailing List Management
  */
 
-$page_security = 'SA_CUSTOMER';
+$page_security = 'SA_ksf_FA_EmailManagerMANAGE';
 $path_to_root = "../..";
 
 include_once($path_to_root . "/includes/session.inc");
 include_once($path_to_root . "/includes/ui.inc");
-include_once($path_to_root . "/modules/FA_EmailManager/includes/em_db.inc");
+include_once($path_to_root . "/modules/ksf_FA_EmailManager/includes/em_db.inc");
 
 page(_($help_context = "Mailing Lists"));
 

@@ -25,7 +25,8 @@ function add_email_account($account_data)
 {
     $sql = "INSERT INTO " . TB_PREF . "fa_em_accounts
         (account_name, email_address, account_type, server_host, server_port, encryption,
-         username, password, sync_folder, is_active, debtor_no, contact_id)
+         username, password, sync_folder, is_active, debtor_no, contact_id,
+         auto_import, import_frequency)
     VALUES (" . db_escape($account_data['account_name']) . ",
             " . db_escape($account_data['email_address']) . ",
             " . db_escape($account_data['account_type']) . ",
@@ -37,7 +38,9 @@ function add_email_account($account_data)
             " . db_escape($account_data['sync_folder']) . ",
             " . db_escape($account_data['is_active']) . ",
             " . db_escape($account_data['debtor_no']) . ",
-            " . db_escape($account_data['contact_id']) . ")";
+            " . db_escape($account_data['contact_id']) . ",
+            " . db_escape($account_data['auto_import'] ?? 0) . ",
+            " . db_escape($account_data['import_frequency'] ?? 60) . ")";
 
     db_query($sql, "Could not add email account");
     return db_insert_id();
@@ -74,10 +77,29 @@ function update_email_account($account_id, $account_data)
         sync_folder = " . db_escape($account_data['sync_folder']) . ",
         is_active = " . db_escape($account_data['is_active']) . ",
         debtor_no = " . db_escape($account_data['debtor_no']) . ",
-        contact_id = " . db_escape($account_data['contact_id']) . "
+        contact_id = " . db_escape($account_data['contact_id']) . ",
+        auto_import = " . db_escape($account_data['auto_import'] ?? 0) . ",
+        import_frequency = " . db_escape($account_data['import_frequency'] ?? 60) . "
     WHERE id = " . db_escape($account_id);
 
     db_query($sql, "Could not update email account");
+}
+
+function delete_email_account($account_id)
+{
+    $sql = "DELETE FROM " . TB_PREF . "fa_em_accounts WHERE id = " . db_escape($account_id);
+    db_query($sql, "Could not delete email account");
+}
+
+function get_email_accounts()
+{
+    $sql = "SELECT * FROM " . TB_PREF . "fa_em_accounts ORDER BY account_name";
+    $result = db_query($sql, "Could not get accounts");
+    $accounts = [];
+    while ($row = db_fetch_assoc($result)) {
+        $accounts[] = $row;
+    }
+    return $accounts;
 }
 
 function save_inbound_email($email_data)
@@ -227,11 +249,16 @@ function find_debtor_by_email($email_address)
 
 function find_contact_by_email($email_address)
 {
-    $sql = "SELECT contact_id FROM " . TB_PREF . "crm_contacts 
-        WHERE email = " . db_escape($email_address) . " LIMIT 1";
+    // Native FA model: crm_contacts is a person->entity xref (id, person_id,
+    // type, action, entity_id) and carries no email column. The address lives
+    // on crm_persons, so the lookup has to join.
+    $sql = "SELECT c.id FROM " . TB_PREF . "crm_contacts c
+        INNER JOIN " . TB_PREF . "crm_persons p ON p.id = c.person_id
+        WHERE p.email = " . db_escape($email_address) . "
+        AND p.inactive = 0 LIMIT 1";
     $result = db_query($sql, "Could not find contact");
     $row = db_fetch_assoc($result);
-    return $row ? $row['contact_id'] : null;
+    return $row ? $row['id'] : null;
 }
 
 function em_find_customer_match($email_address): array

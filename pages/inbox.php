@@ -3,13 +3,13 @@
  * Email Inbox - View and Process Incoming Emails
  */
 
-$page_security = 'SA_CUSTOMER';
+$page_security = 'SA_ksf_FA_EmailManagerVIEW';
 $path_to_root = "../..";
 
 include_once($path_to_root . "/includes/session.inc");
 include_once($path_to_root . "/includes/ui.inc");
-include_once($path_to_root . "/modules/FA_EmailManager/includes/em_db.inc");
-include_once($path_to_root . "/modules/FA_EmailManager/includes/em_routing.inc");
+include_once($path_to_root . "/modules/ksf_FA_EmailManager/includes/em_db.inc");
+include_once($path_to_root . "/modules/ksf_FA_EmailManager/includes/em_routing.inc");
 
 page(_($help_context = "Email Inbox"));
 
@@ -18,7 +18,7 @@ $filter = $_POST['filter'] ?? 'unprocessed';
 //-----------------------------------------------------------------------------------
 
 if (isset($_POST['sync_account'])) {
-    include_once($path_to_root . "/modules/FA_EmailManager/includes/em_routing.inc");
+    include_once($path_to_root . "/modules/ksf_FA_EmailManager/includes/em_routing.inc");
     
     $account_id = $_POST['account_id'];
     $result = sync_email_account($account_id);

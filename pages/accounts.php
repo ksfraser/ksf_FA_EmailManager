@@ -3,12 +3,12 @@
  * Email Account Management Page
  */
 
-$page_security = 'SA_CUSTOMER';
+$page_security = 'SA_ksf_FA_EmailManagerMANAGE';
 $path_to_root = "../..";
 
 include_once($path_to_root . "/includes/session.inc");
 include_once($path_to_root . "/includes/ui.inc");
-include_once($path_to_root . "/modules/FA_EmailManager/includes/em_db.inc");
+include_once($path_to_root . "/modules/ksf_FA_EmailManager/includes/em_db.inc");
 
 page(_($help_context = "Email Account Management"));
 
@@ -42,6 +42,8 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
             'password' => $_POST['password'],
             'sync_folder' => $_POST['sync_folder'],
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
+            'auto_import' => isset($_POST['auto_import']) ? 1 : 0,
+            'import_frequency' => $_POST['import_frequency'] ?? 60,
             'debtor_no' => $_POST['debtor_no'],
             'contact_id' => $_POST['contact_id'],
         ];
@@ -78,6 +80,8 @@ if ($Mode == 'RESET') {
     $_POST['encryption'] = 'ssl';
     $_POST['sync_folder'] = 'INBOX';
     $_POST['is_active'] = 1;
+    $_POST['auto_import'] = 0;
+    $_POST['import_frequency'] = 60;
 }
 
 //-----------------------------------------------------------------------------------
@@ -107,6 +111,8 @@ text_row_ex(_("Username:"), 'username', 30, '', '', '', '');
 text_row_ex(_("Password:"), 'password', 30, '', '', '', '');
 text_row_ex(_("Sync Folder:"), 'sync_folder', 20, '', '', '', 'INBOX');
 check_row(_("Active:"), 'is_active', $_POST['is_active'] ?? 1);
+check_row(_("Auto Import:"), 'auto_import', $_POST['auto_import'] ?? 0);
+smallint_row(_("Import Frequency (minutes):"), 'import_frequency', $_POST['import_frequency'] ?? 60);
 
 debtor_row(_("Customer:"), 'debtor_no', $_POST['debtor_no'], true);
 smallint_row(_("Contact:"), 'contact_id', $_POST['contact_id']);
