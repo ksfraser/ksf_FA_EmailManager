@@ -122,11 +122,15 @@ class hooks_ksf_FA_EmailManager extends hooks {
     }
 
     /**
-     * Run sql/upgrade_2.4.3-1.sql, which drops the misnamed 0_fa_em_* tables.
+     * Run sql/upgrade_2.4.3-1.sql for installations that still hold misnamed
+     * 0_fa_em_* tables.
      *
-     * Deliberately NOT part of the update_databases() map: that gates on
-     * "table missing => run this file", which is the inverse of what a cleanup
-     * script needs. Driven explicitly, and only when there is something to do.
+     * The upgrade file's DROP statements were removed once every installation
+     * had been cut over, so this is now a belt-and-braces no-op that only fires
+     * on a table that predates the cutover. It is deliberately NOT part of the
+     * update_databases() map, which gates on "table missing => run this file" —
+     * the inverse of what a cleanup script needs — and is driven explicitly,
+     * and only when there is something to do.
      *
      * @param int $company Company number
      * @return bool
