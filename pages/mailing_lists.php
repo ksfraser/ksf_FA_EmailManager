@@ -47,7 +47,7 @@ if ($Mode=='ADD_ITEM' || $Mode=='UPDATE_ITEM')
 }
 
 if ($Mode == 'Delete') {
-    $sql = "DELETE FROM " . TB_PREF . "fa_em_mailing_lists WHERE id = " . db_escape($selected_id);
+    $sql = "DELETE FROM " . TB_PREF . "ksf_em_mailing_lists WHERE id = " . db_escape($selected_id);
     db_query($sql, "Could not delete list");
     display_notification(_('List deleted'));
     $Mode = 'RESET';
@@ -95,7 +95,7 @@ end_form();
 
 echo '<h3>' . _('Mailing Lists') . '</h3>';
 
-$sql = "SELECT * FROM " . TB_PREF . "fa_em_mailing_lists ORDER BY list_name";
+$sql = "SELECT * FROM " . TB_PREF . "ksf_em_mailing_lists ORDER BY list_name";
 $result = db_query($sql, "Could not get lists");
 
 start_table(TABLESTYLE, "width=70%");
@@ -104,7 +104,7 @@ table_header([
 ]);
 
 while ($row = db_fetch_assoc($result)) {
-    $sub_count = db_num_rows(db_query("SELECT id FROM " . TB_PREF . "fa_em_subscribers 
+    $sub_count = db_num_rows(db_query("SELECT id FROM " . TB_PREF . "ksf_em_subscribers 
         WHERE list_id = " . db_escape($row['id']) . " AND status != 'unsubscribed'"));
     
     href_js_edit_link("?selected_id=" . $row['id'] . "&Mode=EDIT_ITEM", 'edit', $row['list_name']);

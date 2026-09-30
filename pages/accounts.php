@@ -123,7 +123,7 @@ submit_center($Mode == 'EDIT_ITEM' ? _("Update") : _("Add Account"), true, '', t
 
 //--------------------------------------------------------------------------------
 
-$sql = "SELECT * FROM " . TB_PREF . "fa_em_accounts ORDER BY account_name";
+$sql = "SELECT * FROM " . TB_PREF . "ksf_em_accounts ORDER BY account_name";
 $result = db_query($sql, "Could not get accounts");
 
 start_table(TABLESTYLE, "width=80%");

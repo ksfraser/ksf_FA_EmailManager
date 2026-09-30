@@ -23,7 +23,7 @@ function em_dispatch_event(string $eventName, $eventData = null): void
 
 function add_email_account($account_data)
 {
-    $sql = "INSERT INTO " . TB_PREF . "fa_em_accounts
+    $sql = "INSERT INTO " . TB_PREF . "ksf_em_accounts
         (account_name, email_address, account_type, server_host, server_port, encryption,
          username, password, sync_folder, is_active, debtor_no, contact_id,
          auto_import, import_frequency)
@@ -48,14 +48,14 @@ function add_email_account($account_data)
 
 function get_email_account($account_id)
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_accounts WHERE id = " . db_escape($account_id);
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_accounts WHERE id = " . db_escape($account_id);
     $result = db_query($sql, "Could not get email account");
     return db_fetch_assoc($result);
 }
 
 function get_active_email_accounts()
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_accounts WHERE is_active = 1";
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_accounts WHERE is_active = 1";
     $result = db_query($sql, "Could not get email accounts");
     $accounts = [];
     while ($row = db_fetch_assoc($result)) {
@@ -66,7 +66,7 @@ function get_active_email_accounts()
 
 function update_email_account($account_id, $account_data)
 {
-    $sql = "UPDATE " . TB_PREF . "fa_em_accounts SET
+    $sql = "UPDATE " . TB_PREF . "ksf_em_accounts SET
         account_name = " . db_escape($account_data['account_name']) . ",
         email_address = " . db_escape($account_data['email_address']) . ",
         server_host = " . db_escape($account_data['server_host']) . ",
@@ -87,13 +87,13 @@ function update_email_account($account_id, $account_data)
 
 function delete_email_account($account_id)
 {
-    $sql = "DELETE FROM " . TB_PREF . "fa_em_accounts WHERE id = " . db_escape($account_id);
+    $sql = "DELETE FROM " . TB_PREF . "ksf_em_accounts WHERE id = " . db_escape($account_id);
     db_query($sql, "Could not delete email account");
 }
 
 function get_email_accounts()
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_accounts ORDER BY account_name";
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_accounts ORDER BY account_name";
     $result = db_query($sql, "Could not get accounts");
     $accounts = [];
     while ($row = db_fetch_assoc($result)) {
@@ -104,7 +104,7 @@ function get_email_accounts()
 
 function save_inbound_email($email_data)
 {
-    $sql = "INSERT INTO " . TB_PREF . "fa_em_inbound_emails
+    $sql = "INSERT INTO " . TB_PREF . "ksf_em_inbound_emails
         (message_id, subject, from_address, from_name, to_address, cc_addresses, bcc_addresses,
          body_text, body_html, attachments, received_date, raw_headers, routing_action,
          linked_entity_id, linked_entity_type, debtor_no, contact_id, account_id)
@@ -137,14 +137,14 @@ function save_inbound_email($email_data)
 
 function get_inbound_email($email_id)
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_inbound_emails WHERE id = " . db_escape($email_id);
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_inbound_emails WHERE id = " . db_escape($email_id);
     $result = db_query($sql, "Could not get inbound email");
     return db_fetch_assoc($result);
 }
 
 function get_unprocessed_emails($limit = 50)
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_inbound_emails 
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_inbound_emails 
         WHERE is_processed = 0 
         ORDER BY received_date ASC 
         LIMIT " . db_escape($limit);
@@ -158,13 +158,13 @@ function get_unprocessed_emails($limit = 50)
 
 function mark_email_processed($email_id)
 {
-    $sql = "UPDATE " . TB_PREF . "fa_em_inbound_emails SET is_processed = 1 WHERE id = " . db_escape($email_id);
+    $sql = "UPDATE " . TB_PREF . "ksf_em_inbound_emails SET is_processed = 1 WHERE id = " . db_escape($email_id);
     db_query($sql, "Could not mark email processed");
 }
 
 function add_mailing_list($list_data)
 {
-    $sql = "INSERT INTO " . TB_PREF . "fa_em_mailing_lists
+    $sql = "INSERT INTO " . TB_PREF . "ksf_em_mailing_lists
         (list_name, description, from_address, from_name, reply_to, subscription_type, is_active)
     VALUES (" . db_escape($list_data['list_name']) . ",
             " . db_escape($list_data['description']) . ",
@@ -180,7 +180,7 @@ function add_mailing_list($list_data)
 
 function get_mailing_list($list_id)
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_mailing_lists WHERE id = " . db_escape($list_id);
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_mailing_lists WHERE id = " . db_escape($list_id);
     $result = db_query($sql, "Could not get mailing list");
     return db_fetch_assoc($result);
 }
@@ -190,7 +190,7 @@ function add_subscriber($subscriber_data)
     $subscribe_token = bin2hex(random_bytes(16));
     $unsubscribe_token = bin2hex(random_bytes(16));
     
-    $sql = "INSERT INTO " . TB_PREF . "fa_em_subscribers
+    $sql = "INSERT INTO " . TB_PREF . "ksf_em_subscribers
         (list_id, email, name, debtor_no, contact_id, status, subscribe_token, unsubscribe_token)
     VALUES (" . db_escape($subscriber_data['list_id']) . ",
             " . db_escape($subscriber_data['email']) . ",
@@ -215,7 +215,7 @@ function add_subscriber($subscriber_data)
 
 function get_subscribers($list_id)
 {
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_subscribers WHERE list_id = " . db_escape($list_id);
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_subscribers WHERE list_id = " . db_escape($list_id);
     $result = db_query($sql, "Could not get subscribers");
     $subscribers = [];
     while ($row = db_fetch_assoc($result)) {
@@ -226,14 +226,14 @@ function get_subscribers($list_id)
 
 function confirm_subscriber($subscribe_token)
 {
-    $sql = "UPDATE " . TB_PREF . "fa_em_subscribers SET status = 'active' 
+    $sql = "UPDATE " . TB_PREF . "ksf_em_subscribers SET status = 'active' 
         WHERE subscribe_token = " . db_escape($subscribe_token);
     db_query($sql, "Could not confirm subscriber");
 }
 
 function unsubscribe_by_token($unsubscribe_token)
 {
-    $sql = "UPDATE " . TB_PREF . "fa_em_subscribers SET status = 'unsubscribed' 
+    $sql = "UPDATE " . TB_PREF . "ksf_em_subscribers SET status = 'unsubscribed' 
         WHERE unsubscribe_token = " . db_escape($unsubscribe_token);
     db_query($sql, "Could not unsubscribe");
 }
@@ -281,7 +281,7 @@ function route_email($email_id)
     $subject = strtolower($email['subject']);
     $body = strtolower($email['body_text'] ?? '');
     
-    $sql = "SELECT * FROM " . TB_PREF . "fa_em_routes 
+    $sql = "SELECT * FROM " . TB_PREF . "ksf_em_routes 
         WHERE is_active = 1 ORDER BY priority DESC";
     $result = db_query($sql, "Could not get routes");
     

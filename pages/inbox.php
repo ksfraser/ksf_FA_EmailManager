@@ -89,7 +89,7 @@ if ($filter === 'unprocessed') {
     $where = "routing_action IN ('opportunity', 'lead')";
 }
 
-$sql = "SELECT * FROM " . TB_PREF . "fa_em_inbound_emails 
+$sql = "SELECT * FROM " . TB_PREF . "ksf_em_inbound_emails 
     WHERE {$where} ORDER BY received_date DESC LIMIT 100";
 $result = db_query($sql, "Could not get emails");
 

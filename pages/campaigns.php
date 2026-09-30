@@ -21,7 +21,7 @@ if ($action === 'link') {
     $campaign_id = $_POST['campaign_id'];
     $list_id = $_POST['list_id'];
     
-    db_query("INSERT IGNORE INTO " . TB_PREF . "fa_em_campaign_lists 
+    db_query("INSERT IGNORE INTO " . TB_PREF . "ksf_em_campaign_lists 
         (campaign_id, list_id) VALUES (" . db_escape($campaign_id) . ", " . db_escape($list_id) . ")");
     
     display_notification(_("Campaign linked to mailing list"));
@@ -31,7 +31,7 @@ if ($action === 'unlink') {
     $campaign_id = $_POST['campaign_id'];
     $list_id = $_POST['list_id'];
     
-    db_query("DELETE FROM " . TB_PREF . "fa_em_campaign_lists 
+    db_query("DELETE FROM " . TB_PREF . "ksf_em_campaign_lists 
         WHERE campaign_id = " . db_escape($campaign_id) . " AND list_id = " . db_escape($list_id));
     
     display_notification(_("Campaign unlinked from mailing list"));
@@ -40,14 +40,14 @@ if ($action === 'unlink') {
 if ($action === 'send') {
     $campaign_id = $_POST['campaign_id'];
     
-    $sql = "SELECT l.list_id FROM " . TB_PREF . "fa_em_campaign_lists l WHERE l.campaign_id = " . db_escape($campaign_id);
+    $sql = "SELECT l.list_id FROM " . TB_PREF . "ksf_em_campaign_lists l WHERE l.campaign_id = " . db_escape($campaign_id);
     $result = db_query($sql, "Could not get linked lists");
     
     $total_sent = 0;
     while ($row = db_fetch_assoc($result)) {
         $list_id = $row['list_id'];
         
-        $subs = db_query("SELECT email FROM " . TB_PREF . "fa_em_subscribers 
+        $subs = db_query("SELECT email FROM " . TB_PREF . "ksf_em_subscribers 
             WHERE list_id = " . db_escape($list_id) . " AND status = 'active'");
         
         while ($sub = db_fetch_assoc($subs)) {
@@ -90,14 +90,14 @@ if ($campaign_filter > 0) {
     echo '<h3>' . _('Mailing Lists') . '</h3>';
     
     $sql = "SELECT l.id, l.list_name, l.from_address, 
-           (SELECT COUNT(*) FROM " . TB_PREF . "fa_em_subscribers s 
+           (SELECT COUNT(*) FROM " . TB_PREF . "ksf_em_subscribers s 
             WHERE s.list_id = l.id AND s.status = 'active') as subscriber_count
-        FROM " . TB_PREF . "fa_em_mailing_lists l
+        FROM " . TB_PREF . "ksf_em_mailing_lists l
         ORDER BY l.list_name";
     $result = db_query($sql, "Could not get lists");
     
     $linked_lists = [];
-    $sql2 = "SELECT list_id FROM " . TB_PREF . "fa_em_campaign_links 
+    $sql2 = "SELECT list_id FROM " . TB_PREF . "ksf_em_campaign_links 
         WHERE campaign_id = " . db_escape($campaign_filter);
     $result2 = @db_query($sql2);
     if ($result2) {

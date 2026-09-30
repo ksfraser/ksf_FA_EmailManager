@@ -93,6 +93,11 @@ class hooks_ksf_FA_EmailManager extends hooks {
     /**
      * Activate extension
      *
+     * One sql/<tablename>.sql per table, each holding that table's definition
+     * plus any pre-seed data. update_databases() gates each file on its own
+     * table, so a partially-installed database gets the missing tables
+     * individually.
+     *
      * @param int $company Company number
      * @param bool $check_only Only check if activation possible
      * @return bool Success
@@ -100,11 +105,65 @@ class hooks_ksf_FA_EmailManager extends hooks {
     function activate_extension($company, $check_only=true) {
         $this->ensure_composer_dependencies();
 
-        if (file_exists(dirname(__FILE__) . '/sql/install.sql')) {
-            $updates = array('install.sql' => array($this->module_name));
-            return $this->update_databases($company, $updates, $check_only);
+        $updates = array(
+            'ksf_em_accounts.sql'        => array('ksf_em_accounts'),
+            'ksf_em_inbound_emails.sql'  => array('ksf_em_inbound_emails'),
+            'ksf_em_mailing_lists.sql'   => array('ksf_em_mailing_lists'),
+            'ksf_em_subscribers.sql'     => array('ksf_em_subscribers'),
+            'ksf_em_routes.sql'          => array('ksf_em_routes'),
+        );
+        $ok = $this->update_databases($company, $updates, $check_only);
+
+        if (!$check_only && $ok) {
+            $this->retire_misnamed_tables($company);
         }
 
+        return $ok;
+    }
+
+    /**
+     * Run sql/upgrade_2.4.3-1.sql, which drops the misnamed 0_fa_em_* tables.
+     *
+     * Deliberately NOT part of the update_databases() map: that gates on
+     * "table missing => run this file", which is the inverse of what a cleanup
+     * script needs. Driven explicitly, and only when there is something to do.
+     *
+     * @param int $company Company number
+     * @return bool
+     */
+    private function retire_misnamed_tables($company) {
+        global $db_connections;
+
+        $legacy = array('fa_em_accounts', 'fa_em_inbound_emails',
+            'fa_em_mailing_lists', 'fa_em_subscribers', 'fa_em_routes');
+
+        $present = false;
+        foreach ($legacy as $table) {
+            $res = db_query("SHOW TABLES LIKE " . db_escape(TB_PREF . $table), 'Cannot check table');
+            if (db_num_rows($res) > 0) {
+                $present = true;
+                break;
+            }
+        }
+        if (!$present) {
+            return true; // already cut over
+        }
+
+        $file = dirname(__FILE__) . '/sql/upgrade_2.4.3-1.sql';
+        if (!file_exists($file)) {
+            return true;
+        }
+
+        $conn = ($company == -1) ? $db_connections
+            : array($company => $db_connections[$company]);
+        foreach ($conn as $comp => $con) {
+            set_global_connection($comp);
+            if (!db_import($file, $con)) {
+                db_close();
+                return false;
+            }
+            db_close();
+        }
         return true;
     }
 

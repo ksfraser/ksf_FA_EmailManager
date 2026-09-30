@@ -16,11 +16,11 @@ function process_inbound_email($email_id)
     $contact_id = $customer_match['contact_id'];
     
     if ($debtor_no) {
-        $sql = "UPDATE " . TB_PREF . "fa_em_inbound_emails SET debtor_no = " . db_escape($debtor_no) . " WHERE id = " . db_escape($email_id);
+        $sql = "UPDATE " . TB_PREF . "ksf_em_inbound_emails SET debtor_no = " . db_escape($debtor_no) . " WHERE id = " . db_escape($email_id);
         db_query($sql, "Could not update debtor");
     }
     if ($contact_id) {
-        $sql = "UPDATE " . TB_PREF . "fa_em_inbound_emails SET contact_id = " . db_escape($contact_id) . " WHERE id = " . db_escape($email_id);
+        $sql = "UPDATE " . TB_PREF . "ksf_em_inbound_emails SET contact_id = " . db_escape($contact_id) . " WHERE id = " . db_escape($email_id);
         db_query($sql, "Could not update contact");
     }
     
@@ -28,7 +28,7 @@ function process_inbound_email($email_id)
     $action = $route['action'];
     $reason = $route['reason'];
     
-    $sql = "UPDATE " . TB_PREF . "fa_em_inbound_emails SET 
+    $sql = "UPDATE " . TB_PREF . "ksf_em_inbound_emails SET 
         routing_action = " . db_escape($action) . "
         WHERE id = " . db_escape($email_id);
     db_query($sql, "Could not update routing");
@@ -44,7 +44,7 @@ function process_inbound_email($email_id)
     }
     
     if ($entity_id > 0) {
-        $sql = "UPDATE " . TB_PREF . "fa_em_inbound_emails SET 
+        $sql = "UPDATE " . TB_PREF . "ksf_em_inbound_emails SET 
             linked_entity_id = " . db_escape($entity_id) . ",
             linked_entity_type = " . db_escape($action) . "
             WHERE id = " . db_escape($email_id);
@@ -139,7 +139,7 @@ function sync_email_account($account_id)
     foreach ($headers as $msgno => $header_info) {
         $header = imap_headerinfo($imap, $msgno + 1);
         
-        $existing = db_num_rows(db_query("SELECT id FROM " . TB_PREF . "fa_em_inbound_emails 
+        $existing = db_num_rows(db_query("SELECT id FROM " . TB_PREF . "ksf_em_inbound_emails 
             WHERE message_id = " . db_escape($header->message_id)));
         
         if ($existing > 0) continue;
@@ -181,7 +181,7 @@ function sync_email_account($account_id)
         $synced++;
     }
     
-    $sql = "UPDATE " . TB_PREF . "fa_em_accounts SET last_sync = NOW() WHERE id = " . db_escape($account_id);
+    $sql = "UPDATE " . TB_PREF . "ksf_em_accounts SET last_sync = NOW() WHERE id = " . db_escape($account_id);
     db_query($sql, "Could not update last sync");
     
     imap_close($imap);
