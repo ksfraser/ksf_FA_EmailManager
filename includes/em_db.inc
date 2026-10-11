@@ -238,13 +238,49 @@ function unsubscribe_by_token($unsubscribe_token)
     db_query($sql, "Could not unsubscribe");
 }
 
+/**
+ * Resolve a debtor_no from an email address.
+ *
+ * 0_debtors_master has no `email` column (stock FA 2.4.3: 16 columns, verified
+ * live) and no module adds one, so the debtor cannot be looked up directly.
+ * FA's native model is inverted instead: the address lives on 0_crm_persons,
+ * and 0_crm_contacts is the person -> entity xref whose entity_id is the
+ * debtor_no when type = 'customer'. That is the exact pairing FA itself writes
+ * via add_crm_contact('customer', 'general', $debtor_no, $person_id) at
+ * sales/manage/customers.php, so person -> contact -> debtor is the FA-native
+ * resolution. Filtering on type also stops a cust_branch/supplier row (whose
+ * entity_id is a branch or supplier number, not a debtor_no) being returned.
+ *
+ * @param string $email_address From-address to resolve.
+ *
+ * @return string|null debtor_no, or null when there is no match. A person
+ *                     that exists but has no customer contact returns null,
+ *                     as does an empty or unknown address.
+ */
 function find_debtor_by_email($email_address)
 {
-    $sql = "SELECT debtor_no FROM " . TB_PREF . "debtors_master 
-        WHERE email = " . db_escape($email_address) . " LIMIT 1";
+    if (!is_string($email_address)) return null;
+
+    $email_address = trim($email_address);
+
+    // An empty address would otherwise match a person row whose email column
+    // is blank and resolve to that person's debtor.
+    if ($email_address === '') return null;
+
+    $sql = "SELECT c.entity_id FROM " . TB_PREF . "crm_contacts c
+        INNER JOIN " . TB_PREF . "crm_persons p ON p.id = c.person_id
+        WHERE c.type = 'customer'
+        AND p.email = " . db_escape($email_address) . "
+        AND p.inactive = 0
+        ORDER BY c.id ASC LIMIT 1";
     $result = db_query($sql, "Could not find debtor");
     $row = db_fetch_assoc($result);
-    return $row ? $row['debtor_no'] : null;
+
+    if (!$row || $row['entity_id'] === null || $row['entity_id'] === '') {
+        return null;
+    }
+
+    return $row['entity_id'];
 }
 
 function find_contact_by_email($email_address)

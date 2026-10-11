@@ -12,6 +12,10 @@ function process_inbound_email($email_id)
     $from_address = $email['from_address'];
     
     $customer_match = em_find_customer_match($from_address);
+    // Both lookups return null when there is no match (unknown address, or a
+    // person with no customer contact). The UPDATE guards below rely on that.
+    // The entity creators take an INT column, so coerce null -> 0 there rather
+    // than handing db_escape() a null.
     $debtor_no = $customer_match['debtor_no'];
     $contact_id = $customer_match['contact_id'];
     
@@ -36,10 +40,10 @@ function process_inbound_email($email_id)
     $entity_id = 0;
     
     if ($action === 'ticket') {
-        $entity_id = em_create_ticket_from_email($email_id, $debtor_no, $contact_id);
+        $entity_id = em_create_ticket_from_email($email_id, $debtor_no ?? 0, $contact_id ?? 0);
         em_dispatch_event('ticket_created', ['ticket_id' => $entity_id, 'email_id' => $email_id]);
     } elseif ($action === 'opportunity' || $action === 'lead') {
-        $entity_id = em_create_opportunity_from_email($email_id, $debtor_no, $contact_id);
+        $entity_id = em_create_opportunity_from_email($email_id, $debtor_no ?? 0, $contact_id ?? 0);
         em_dispatch_event('opportunity_created', ['opportunity_id' => $entity_id, 'email_id' => $email_id]);
     }
     
