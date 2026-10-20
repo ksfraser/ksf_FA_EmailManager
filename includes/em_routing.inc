@@ -93,16 +93,20 @@ function em_create_opportunity_from_email($email_id, $debtor_no = 0, $contact_id
     $email = get_inbound_email($email_id);
     if (!$email) return 0;
     
-    $sql = "INSERT INTO " . TB_PREF . "crm_opportunities
-        (name, description, debtor_no, contact_id, source, status, probability, created_date)
+    // A CRM opportunity is a CRM-domain record: it lives in the CRM module's
+    // own table (0_ksf_crm_opportunities), not in 0_crm_opportunities, which
+    // no schema creates. The column names follow that table too - the CRM
+    // calls them opportunity_name, notes and created_at.
+    $sql = "INSERT INTO " . TB_PREF . "ksf_crm_opportunities
+        (opportunity_name, notes, debtor_no, contact_id, source, status, probability, created_at)
     VALUES (" . db_escape($email['subject']) . ",
             " . db_escape($email['body_text']) . ",
             " . db_escape($debtor_no) . ",
             " . db_escape($contact_id) . ",
             'Email',
-            'New',
+            'prospecting',
             10,
-            CURDATE())";
+            NOW())";
 
     @db_query($sql, "Could not create opportunity");
     return @db_insert_id() ?: 0;

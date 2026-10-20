@@ -107,6 +107,7 @@ class hooks_ksf_FA_EmailManager extends hooks {
 
         $updates = array(
             'ksf_em_accounts.sql'        => array('ksf_em_accounts'),
+            'ksf_em_campaign_lists.sql'  => array('ksf_em_campaign_lists'),
             'ksf_em_inbound_emails.sql'  => array('ksf_em_inbound_emails'),
             'ksf_em_mailing_lists.sql'   => array('ksf_em_mailing_lists'),
             'ksf_em_subscribers.sql'     => array('ksf_em_subscribers'),

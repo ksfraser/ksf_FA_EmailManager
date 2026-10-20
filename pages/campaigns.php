@@ -65,16 +65,19 @@ start_form();
 start_table(TABLESTYLE, "width=50%");
 table_section_title(_("Select Campaign"));
 
-$sql = "SELECT c.campaign_id, c.campaign_name FROM " . TB_PREF . "crm_campaigns c ORDER BY c.campaign_name";
-if (!db_query($sql, "Could not get campaigns")) {
-    $sql = "SELECT campaign_id, campaign_name FROM " . TB_PREF . "crm_campaigns ORDER BY campaign_name";
-}
-$result = @$sql ? db_query($sql, "Could not get campaigns") : null;
+// A campaign is a CRM-domain record: the CRM module owns the catalogue
+// (0_ksf_crm_campaigns). There is no 0_crm_campaigns table - no schema in
+// the estate creates one - so the picker read a table that does not exist.
+// The column names follow the CRM's table too (id, campaign_name).
+$sql = "SELECT c.id AS campaign_id, c.campaign_name FROM " . TB_PREF . "ksf_crm_campaigns c ORDER BY c.campaign_name";
+$result = check_table(TB_PREF, 'ksf_crm_campaigns') == 0
+    ? db_query($sql, "Could not get campaigns")
+    : null;
 
 $campaigns = [0 => _('Select a campaign')];
 if ($result) {
     while ($row = db_fetch_assoc($result)) {
-        $campaigns[$row['campaign_id'] ?? $row['id']] = $row['campaign_name'] ?? $row['name'] ?? 'Campaign #' . ($row['campaign_id'] ?? $row['id']);
+        $campaigns[$row['campaign_id']] = $row['campaign_name'] ?? 'Campaign #' . $row['campaign_id'];
     }
 }
 select_row(_("Campaign:"), 'campaign_id', $campaign_filter, $campaigns);
@@ -97,7 +100,7 @@ if ($campaign_filter > 0) {
     $result = db_query($sql, "Could not get lists");
     
     $linked_lists = [];
-    $sql2 = "SELECT list_id FROM " . TB_PREF . "ksf_em_campaign_links 
+    $sql2 = "SELECT list_id FROM " . TB_PREF . "ksf_em_campaign_lists
         WHERE campaign_id = " . db_escape($campaign_filter);
     $result2 = @db_query($sql2);
     if ($result2) {
