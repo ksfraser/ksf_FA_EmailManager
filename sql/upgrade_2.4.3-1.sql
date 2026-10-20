@@ -1,7 +1,7 @@
 -- ============================================================================
 -- ksf_FA_EmailManager upgrade — table prefix correction (COMPLETED)
 -- ============================================================================
--- Module tables were created as 0_fa_em_* which did not match the documented
+-- Module tables were created with an fa_em_* prefix which did not match the documented
 -- convention in AGENTS.md ("SQL tables: 0_ksf_<tablename>"). The 0_fa_ prefix
 -- also read as "FrontAccounting's own table" rather than a ksf module table.
 --
@@ -10,8 +10,8 @@
 -- The temporary DROP statements that retired the misnamed tables have been
 -- removed. Every installation has been cut over, verified on the integration
 -- box: activating ksf_FA_EmailManager first creates the 5 0_ksf_em_* tables,
--- after which ksf_FA_CRM's #25 handover copies 0_fa_crm_email_accounts into
--- 0_ksf_em_accounts and its own cleanup removes the last 0_fa_crm_* table.
+-- after which ksf_FA_CRM's #25 handover copies the legacy fa_crm_email_accounts into
+-- 0_ksf_em_accounts and its own cleanup removes the last fa_crm_* table.
 -- Re-activation is a no-op.
 --
 -- This file is intentionally empty of statements. It is retained so the

@@ -124,7 +124,7 @@ class hooks_ksf_FA_EmailManager extends hooks {
 
     /**
      * Run sql/upgrade_2.4.3-1.sql for installations that still hold misnamed
-     * 0_fa_em_* tables.
+     * fa_em_* tables.
      *
      * The upgrade file's DROP statements were removed once every installation
      * had been cut over, so this is now a belt-and-braces no-op that only fires

@@ -10,7 +10,7 @@
 --
 -- fa_em_accounts is the mailbox-of-record for BR-CRM-02 (ksf_FA_CRM). The
 -- auto_import/import_frequency/last_import columns migrated in from the
--- retired 0_fa_crm_email_accounts so the periodic import worker has a home.
+-- retired fa_crm_email_accounts so the periodic import worker has a home.
 
 CREATE TABLE IF NOT EXISTS `0_ksf_em_accounts` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,

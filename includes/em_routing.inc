@@ -72,7 +72,7 @@ function em_create_ticket_from_email($email_id, $debtor_no = 0, $contact_id = 0)
     
     $ticket_number = 'TKT-' . date('Ymd') . '-' . str_pad(time() % 10000, 4, '0', STR_PAD_LEFT);
     
-    $sql = "INSERT INTO " . TB_PREF . "fa_st_tickets
+    $sql = "INSERT INTO " . TB_PREF . "ksf_supporttickets_tickets
         (ticket_number, subject, description, type, priority, status, debtor_no, contact_id, created_by)
     VALUES (" . db_escape($ticket_number) . ",
             " . db_escape($email['subject']) . ",
